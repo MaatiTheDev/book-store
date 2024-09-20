@@ -1,52 +1,75 @@
-import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
-
 import click
-from lib.db.models import Author, Book, Sale, session
-
-
-
-
-
-
-from lib.db.models import Author, Book, Sale, session
-from lib.db.seed import seed_data
-from lib.helpers import add_book_helper, add_author_helper, list_books_helper
+from db.models import Author, Book, Sale, session
 
 @click.group()
 def cli():
-    """Book Store Management CLI"""
     pass
 
-@cli.command()
-def seed():
-    """Seed the database with initial data"""
-    seed_data()
-    click.echo("Database seeded with initial data.")
-
-@cli.command()
+# Add a new author
+@click.command()
 @click.argument('name')
 def add_author(name):
-    """Add a new author"""
-    add_author_helper(name)
-    click.echo(f"Author {name} added to the database.")
+    author = Author(name=name)
+    session.add(author)
+    session.commit()
+    click.echo(f"Author '{name}' added successfully!")
 
-@cli.command()
+# List all authors
+@click.command()
+def list_authors():
+    authors = session.query(Author).all()
+    for author in authors:
+        click.echo(f"{author.id}: {author.name}")
+
+# Add a new book
+@click.command()
 @click.argument('title')
-@click.argument('author_name')
-def add_book(title, author_name):
-    """Add a new book"""
-    add_book_helper(title, author_name)
-    click.echo(f"Book {title} by {author_name} added to the database.")
+@click.argument('author_id', type=int)
+def add_book(title, author_id):
+    author = session.query(Author).get(author_id)
+    if author:
+        book = Book(title=title, author=author)
+        session.add(book)
+        session.commit()
+        click.echo(f"Book '{title}' by {author.name} added successfully!")
+    else:
+        click.echo(f"Author with ID {author_id} not found.")
 
-@cli.command()
+# List all books
+@click.command()
 def list_books():
-    """List all available books"""
-    books = list_books_helper()
-    click.echo("Books Available:")
+    books = session.query(Book).all()
     for book in books:
-        click.echo(f"- {book.title} by {book.author.name}")
+        click.echo(f"{book.id}: {book.title} by {book.author.name}")
 
-if __name__ == "__main__":
+# Add a new sale
+@click.command()
+@click.argument('book_id', type=int)
+@click.argument('quantity', type=int)
+def add_sale(book_id, quantity):
+    book = session.query(Book).get(book_id)
+    if book:
+        sale = Sale(quantity=quantity, book=book)
+        session.add(sale)
+        session.commit()
+        click.echo(f"Sale of {quantity} units of '{book.title}' added successfully!")
+    else:
+        click.echo(f"Book with ID {book_id} not found.")
+
+# List all sales
+@click.command()
+def list_sales():
+    sales = session.query(Sale).all()
+    for sale in sales:
+        click.echo(f"Sale ID {sale.id}: {sale.quantity} units of {sale.book.title}")
+
+# Register commands
+cli.add_command(add_author)
+cli.add_command(list_authors)
+cli.add_command(add_book)
+cli.add_command(list_books)
+cli.add_command(add_sale)
+cli.add_command(list_sales)
+
+if __name__ == '__main__':
     cli()
