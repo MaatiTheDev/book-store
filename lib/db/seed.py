@@ -1,17 +1,20 @@
-from models import Author, Book, session
+from models import Author, Book, Sale, session
 
-# Create some authors
-author1 = Author(name="John Steinbeck")
-author2 = Author(name="George Orwell")
+# Drop and recreate tables
+Base.metadata.drop_all(engine)
+Base.metadata.create_all(engine)
 
-# Create some books
-book1 = Book(title="Of Mice and Men", author=author1)
-book2 = Book(title="1984", author=author2)
+# Create seed data
+author_1 = Author(name="J.K. Rowling")
+book_1 = Book(title="Harry Potter", author=author_1)
+sale_1 = Sale(quantity=50, book=book_1)
 
-# Add authors and books to the session
-session.add_all([author1, author2, book1, book2])
+author_2 = Author(name="George R.R. Martin")
+book_2 = Book(title="Game of Thrones", author=author_2)
+sale_2 = Sale(quantity=30, book=book_2)
 
-# Commit the changes to the database
+# Add data to session
+session.add_all([author_1, book_1, sale_1, author_2, book_2, sale_2])
 session.commit()
 
 print("Database seeded successfully!")
