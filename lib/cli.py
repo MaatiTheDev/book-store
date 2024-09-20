@@ -1,4 +1,15 @@
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../')
+
 import click
+from lib.db.models import Author, Book, Sale, session
+
+
+
+
+
+
 from lib.db.models import Author, Book, Sale, session
 from lib.db.seed import seed_data
 from lib.helpers import add_book_helper, add_author_helper, list_books_helper
